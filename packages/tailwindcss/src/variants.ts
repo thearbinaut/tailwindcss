@@ -205,6 +205,80 @@ export function createVariants(theme: Theme): Variants {
   variants.static('force', () => {}, { compounds: false })
   staticVariant('*', [':where(& > *)'], { compounds: false })
 
+  // [@, selector]
+  // [selector, @]
+  //
+  // -> {
+  // not(selector)
+  // not(@)
+  // }
+
+  function negateConditions(ruleName: string, conditions: string[]) {
+    return conditions.map((condition) => {
+      condition = condition.trim()
+
+      let parts = segment(condition, ' ')
+
+      // @media not {query}
+      // @supports not {query}
+      // @container not {query}
+      if (parts[0] === 'not') {
+        return parts.slice(1).join(' ')
+      }
+
+      if (ruleName === 'container') {
+        // @container {query}
+        if (parts[0].startsWith('(')) {
+          return `not ${condition}`
+        }
+
+        // @container {name} not {query}
+        else if (parts[1] === 'not') {
+          return `${parts[0]} ${parts.slice(2).join(' ')}`
+        }
+
+        // @container {name} {query}
+        else {
+          return `${parts[0]} not ${parts.slice(1).join(' ')}`
+        }
+      }
+
+      return `not ${condition}`
+    })
+  }
+
+  function negateSelector(selector: string) {
+    if (selector[0] === '@') {
+      let name = selector.slice(1, selector.indexOf(' '))
+      let params = selector.slice(selector.indexOf(' ') + 1)
+
+      if (name === 'media' || name === 'supports' || name === 'container') {
+        let conditions = negateConditions(name, segment(params, ','))
+
+        return `@${name} ${conditions.join(', ')}`
+      }
+
+      return null
+    }
+
+    if (selector.includes('::')) return null
+
+    let selectors = segment(selector, ',').map((sel) => {
+      // Remove unncessary wrapping &:is(…) to reduce the selector size
+      if (sel.startsWith('&:is(') && sel.endsWith(')')) {
+        sel = sel.slice(5, -1)
+      }
+
+      // Replace `&` in target variant with `*`, so variants like `&:hover`
+      // become `&:not(*:hover)`. The `*` will often be optimized away.
+      sel = sel.replaceAll('&', '*')
+
+      return sel
+    })
+
+    return `&:not(${selectors.join(', ')})`
+  }
+
   variants.compound('not', (ruleNode, variant) => {
     if (variant.variant.kind === 'arbitrary' && variant.variant.relative) return null
 
@@ -214,50 +288,57 @@ export function createVariants(theme: Theme): Variants {
 
     walk([ruleNode], (node, { path }) => {
       if (node.kind !== 'rule') return WalkAction.Continue
-
-      // Prevent at-rules from being used with `not-*`
-      if (node.selector[0] === '@') {
-        didApply = false
-        return WalkAction.Continue
-      }
+      if (node.nodes.length > 0) return WalkAction.Continue
 
       // Throw out any candidates with variants using nested style rules
-      for (let parent of path.slice(0, -1)) {
-        if (parent.kind !== 'rule') continue
-        if (parent.selector[0] === '@') continue
+      let atRules: Rule[] = []
+      let styleRules: Rule[] = []
 
+      for (let parent of path) {
+        if (parent.kind !== 'rule') continue
+        if (parent.selector[0] === '@') {
+          atRules.push(parent)
+        } else {
+          styleRules.push(parent)
+        }
+      }
+
+      if (atRules.length > 1) return WalkAction.Stop
+      if (styleRules.length > 1) return WalkAction.Stop
+
+      let styleSelector = negateSelector(styleRules[0].selector)
+      if (!styleSelector) {
         didApply = false
         return WalkAction.Stop
       }
 
-      let selectors = segment(node.selector, ',')
-
-      selectors = selectors.map((sel) => {
-        // Remove unncessary wrapping &:is(…) to reduce the selector size
-        if (sel.startsWith('&:is(') && sel.endsWith(')')) {
-          sel = sel.slice(5, -1)
+      if (atRules[0]) {
+        let atRuleSelector = negateSelector(atRules[0].selector)
+        if (!atRuleSelector) {
+          didApply = false
+          return WalkAction.Stop
         }
 
-        // Replace `&` in target variant with `*`, so variants like `&:hover`
-        // become `&:not(*:hover)`. The `*` will often be optimized away.
-        sel = sel.replaceAll('&', '*')
-
-        return sel
-      })
-
-      node.selector = `&:not(${selectors.join(', ')})`
+        ruleNode.selector = '&'
+        ruleNode.nodes = [rule(styleSelector, []), rule(atRuleSelector, [])]
+      } else {
+        ruleNode.selector = '&'
+        ruleNode.nodes = [rule(styleSelector, [])]
+      }
 
       // Track that the variant was actually applied
       didApply = true
     })
 
+    // TODO: Tweak group, peer, has to ignore intermediate `&` selectors (maybe?)
+    if (ruleNode.selector === '&' && ruleNode.nodes.length === 1) {
+      ruleNode.selector = (ruleNode.nodes[0] as Rule).selector
+      ruleNode.nodes = (ruleNode.nodes[0] as Rule).nodes
+    }
+
     // If the node wasn't modified, this variant is not compatible with
     // `not-*` so discard the candidate.
     if (!didApply) return null
-  })
-
-  variants.static('not-hover', (r) => {
-    r.nodes = [rule('&:not(:hover)', r.nodes), rule('@media not (hover: hover)', r.nodes)]
   })
 
   variants.compound('group', (ruleNode, variant) => {
