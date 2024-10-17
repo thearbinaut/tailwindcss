@@ -215,8 +215,11 @@ export function createVariants(theme: Theme): Variants {
     walk([ruleNode], (node, { path }) => {
       if (node.kind !== 'rule') return WalkAction.Continue
 
-      // Skip past at-rules, and continue traversing the children of the at-rule
-      if (node.selector[0] === '@') return WalkAction.Continue
+      // Prevent at-rules from being used with `not-*`
+      if (node.selector[0] === '@') {
+        didApply = false
+        return WalkAction.Continue
+      }
 
       // Throw out any candidates with variants using nested style rules
       for (let parent of path.slice(0, -1)) {
