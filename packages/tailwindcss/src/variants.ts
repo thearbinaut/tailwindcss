@@ -230,9 +230,22 @@ export function createVariants(theme: Theme): Variants {
         return WalkAction.Stop
       }
 
-      // Replace `&` in target variant with `*`, so variants like `&:hover`
-      // become `&:not(*:hover)`. The `*` will often be optimized away.
-      node.selector = `&:not(${node.selector.replaceAll('&', '*')})`
+      let selectors = segment(node.selector, ',')
+
+      selectors = selectors.map((sel) => {
+        // Remove unncessary wrapping &:is(…) to reduce the selector size
+        if (sel.startsWith('&:is(') && sel.endsWith(')')) {
+          sel = sel.slice(5, -1)
+        }
+
+        // Replace `&` in target variant with `*`, so variants like `&:hover`
+        // become `&:not(*:hover)`. The `*` will often be optimized away.
+        sel = sel.replaceAll('&', '*')
+
+        return sel
+      })
+
+      node.selector = `&:not(${selectors.join(', ')})`
 
       // Track that the variant was actually applied
       didApply = true
