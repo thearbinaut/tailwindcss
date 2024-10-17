@@ -243,6 +243,10 @@ export function createVariants(theme: Theme): Variants {
     if (!didApply) return null
   })
 
+  variants.static('not-hover', (r) => {
+    r.nodes = [rule('&:not(:hover)', r.nodes), rule('@media not (hover: hover)', r.nodes)]
+  })
+
   variants.compound('group', (ruleNode, variant) => {
     if (variant.variant.kind === 'arbitrary' && variant.variant.relative) return null
 

@@ -3863,11 +3863,19 @@ exports[`getVariants 1`] = `
   },
   {
     "hasDash": true,
+    "isArbitrary": false,
+    "name": "not-hover",
+    "selectors": [Function],
+    "values": [],
+  },
+  {
+    "hasDash": true,
     "isArbitrary": true,
     "name": "group",
     "selectors": [Function],
     "values": [
       "not",
+      "not-hover",
       "group",
       "peer",
       "first",
@@ -3920,6 +3928,7 @@ exports[`getVariants 1`] = `
     "selectors": [Function],
     "values": [
       "not",
+      "not-hover",
       "group",
       "peer",
       "first",
@@ -4259,6 +4268,7 @@ exports[`getVariants 1`] = `
     "selectors": [Function],
     "values": [
       "not",
+      "not-hover",
       "group",
       "peer",
       "first",
