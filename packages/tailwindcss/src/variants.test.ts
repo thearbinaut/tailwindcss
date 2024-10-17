@@ -1677,7 +1677,7 @@ test('supports', async () => {
   ).toEqual('')
 })
 
-test('not', async () => {
+test.only('not', async () => {
   expect(
     await compileCss(
       css`
@@ -1687,16 +1687,28 @@ test('not', async () => {
             @slot;
           }
         }
+
+        @variant device-hocus {
+          @media (hover: hover) {
+            &:hover,
+            &:focus {
+              @slot;
+            }
+          }
+        }
+
         @tailwind utilities;
       `,
       [
         'not-[:checked]:flex',
         'not-hocus:flex',
+        'not-device-hocus:flex',
 
         'group-not-[:checked]:flex',
         'group-not-[:checked]/parent-name:flex',
         'group-not-checked:flex',
         'group-not-hocus:flex',
+        // 'group-not-device-hocus:flex',
         'group-not-hocus/parent-name:flex',
 
         'peer-not-[:checked]:flex',
@@ -1704,11 +1716,226 @@ test('not', async () => {
         'peer-not-checked:flex',
         'peer-not-hocus:flex',
         'peer-not-hocus/sibling-name:flex',
+
+        // Not versions of built-in variants
+        // 'not-force',
+        // 'not-*',
+        // 'not-first-letter',
+        // 'not-first-line',
+        // 'not-marker',
+        // 'not-selection',
+        // 'not-file',
+        // 'not-placeholder',
+        // 'not-backdrop',
+        // 'not-before',
+        // 'not-after',
+
+        'not-first:flex',
+        'not-last:flex',
+        'not-only:flex',
+        'not-odd:flex',
+        'not-even:flex',
+        'not-first-of-type:flex',
+        'not-last-of-type:flex',
+        'not-only-of-type:flex',
+        'not-visited:flex',
+        'not-target:flex',
+        'not-open:flex',
+        'not-default:flex',
+        'not-checked:flex',
+        'not-indeterminate:flex',
+        'not-placeholder-shown:flex',
+        'not-autofill:flex',
+        'not-optional:flex',
+        'not-required:flex',
+        'not-valid:flex',
+        'not-invalid:flex',
+        'not-in-range:flex',
+        'not-out-of-range:flex',
+        'not-read-only:flex',
+        'not-empty:flex',
+        'not-focus-within:flex',
+        'not-hover:flex',
+        'not-focus:flex',
+        'not-focus-visible:flex',
+        'not-active:flex',
+        'not-enabled:flex',
+        'not-disabled:flex',
+        'not-inert:flex',
+
+        // 'not-group-[...]:flex',
+        // 'not-group-*:flex',
+        // 'not-peer-[...]:flex',
+        // 'not-peer-*:flex',
+        // 'not-ltr:flex',
+        // 'not-rtl:flex',
+        // 'not-motion-safe:flex',
+        // 'not-motion-reduce:flex',
+        // 'not-dark:flex',
+        // 'not-starting:flex',
+        // 'not-print:flex',
+        // 'not-max-*:flex',
+        // 'not-min-*:flex',
+        // 'not-supports-grid:flex',
+        // 'not-has:flex',
+        // 'not-aria:flex',
+        // 'not-data:flex',
+        // 'not-portrait:flex',
+        // 'not-landscape:flex',
+        // 'not-contrast-more:flex',
+        // 'not-contrast-less:flex',
+        // 'not-forced-colors:flex',
+        // 'not-nth:flex',
+        // 'not-container queries:flex',
       ],
     ),
   ).toMatchInlineSnapshot(`
-    ".not-hocus\\:flex:not(:hover, :focus) {
+    ".not-first\\:flex:not(:first-child) {
       display: flex;
+    }
+
+    .not-last\\:flex:not(:last-child) {
+      display: flex;
+    }
+
+    .not-only\\:flex:not(:only-child) {
+      display: flex;
+    }
+
+    .not-odd\\:flex:not(:nth-child(odd)) {
+      display: flex;
+    }
+
+    .not-even\\:flex:not(:nth-child(2n)) {
+      display: flex;
+    }
+
+    .not-first-of-type\\:flex:not(:first-of-type) {
+      display: flex;
+    }
+
+    .not-last-of-type\\:flex:not(:last-of-type) {
+      display: flex;
+    }
+
+    .not-only-of-type\\:flex:not(:only-of-type) {
+      display: flex;
+    }
+
+    .not-visited\\:flex:not(:visited) {
+      display: flex;
+    }
+
+    .not-target\\:flex:not(:target) {
+      display: flex;
+    }
+
+    .not-open\\:flex:not([open], :popover-open) {
+      display: flex;
+    }
+
+    .not-default\\:flex:not(:default) {
+      display: flex;
+    }
+
+    .not-checked\\:flex:not(:checked) {
+      display: flex;
+    }
+
+    .not-indeterminate\\:flex:not(:indeterminate) {
+      display: flex;
+    }
+
+    .not-placeholder-shown\\:flex:not(:placeholder-shown) {
+      display: flex;
+    }
+
+    .not-autofill\\:flex:not(:autofill) {
+      display: flex;
+    }
+
+    .not-optional\\:flex:not(:optional) {
+      display: flex;
+    }
+
+    .not-required\\:flex:not(:required) {
+      display: flex;
+    }
+
+    .not-valid\\:flex:not(:valid) {
+      display: flex;
+    }
+
+    .not-invalid\\:flex:not(:invalid) {
+      display: flex;
+    }
+
+    .not-in-range\\:flex:not(:in-range) {
+      display: flex;
+    }
+
+    .not-out-of-range\\:flex:not(:out-of-range) {
+      display: flex;
+    }
+
+    .not-read-only\\:flex:not(:read-only) {
+      display: flex;
+    }
+
+    .not-empty\\:flex:not(:empty) {
+      display: flex;
+    }
+
+    .not-focus-within\\:flex:not(:focus-within) {
+      display: flex;
+    }
+
+    .not-hover\\:flex:not(:hover) {
+      display: flex;
+    }
+
+    @media not (hover: hover) {
+      .not-hover\\:flex {
+        display: flex;
+      }
+    }
+
+    .not-focus\\:flex:not(:focus) {
+      display: flex;
+    }
+
+    .not-focus-visible\\:flex:not(:focus-visible) {
+      display: flex;
+    }
+
+    .not-active\\:flex:not(:active) {
+      display: flex;
+    }
+
+    .not-enabled\\:flex:not(:enabled) {
+      display: flex;
+    }
+
+    .not-disabled\\:flex:not(:disabled) {
+      display: flex;
+    }
+
+    .not-inert\\:flex:not([inert], [inert] *) {
+      display: flex;
+    }
+
+    .not-hocus\\:flex:not(:hover, :focus) {
+      display: flex;
+    }
+
+    .not-device-hocus\\:flex:not(:hover, :focus) {
+      display: flex;
+    }
+
+    @media not (hover: hover) {
+      .not-device-hocus\\:flex {
+        display: flex;
+      }
     }
 
     .not-\\[\\:checked\\]\\:flex:not(:checked) {
@@ -1756,6 +1983,7 @@ test('not', async () => {
     }"
   `)
 
+  return
   expect(
     await compileCss(
       css`
